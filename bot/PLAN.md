@@ -6,3 +6,6 @@ Second, I will implement the required commands such as /start, /help, /health, /
 
 ## Backend integration note
 The bot reads labs and scores from the deployed LMS backend API.
+
+## Intent routing note
+The bot can route natural-language requests to backend-powered tools and summaries.
