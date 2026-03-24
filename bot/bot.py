@@ -1,6 +1,12 @@
 import argparse
+import asyncio
 
 from handlers import handle_command
+
+
+async def run_test_mode(text: str) -> None:
+    result = await handle_command(text)
+    print(result)
 
 
 def main() -> int:
@@ -9,7 +15,7 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.test is not None:
-        print(handle_command(args.test))
+        asyncio.run(run_test_mode(args.test))
         return 0
 
     print("Telegram runtime is not implemented yet. Use --test mode.")

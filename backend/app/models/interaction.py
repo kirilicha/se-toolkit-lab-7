@@ -4,9 +4,6 @@ from datetime import datetime, timezone
 
 from sqlmodel import Field, SQLModel
 
-# Ensure referenced FK target tables are registered in SQLModel metadata
-# whenever InteractionLog is imported.
-
 
 class InteractionLog(SQLModel, table=True):
     """An interaction log entry in the database."""
@@ -51,4 +48,7 @@ class InteractionModel(SQLModel):
     learner_id: int
     item_id: int
     kind: str
+    score: float | None = None
+    checks_passed: int | None = None
+    checks_total: int | None = None
     created_at: datetime
