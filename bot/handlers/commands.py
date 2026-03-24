@@ -20,7 +20,7 @@ async def _get_items() -> list[dict]:
         return response.json()
 
 
-async def _get_pass_rates(lab: str) -> dict:
+async def _get_pass_rates(lab: str) -> list[dict]:
     async with httpx.AsyncClient(timeout=15.0) as client:
         response = await client.get(
             f"{settings.lms_api_base_url}/analytics/pass-rates",
@@ -79,63 +79,26 @@ def _format_labs(items: list[dict]) -> str:
     return "\n".join(lines)
 
 
-def _collect_numeric_values(obj):
-    values = []
-
-    if isinstance(obj, dict):
-        for value in obj.values():
-            values.extend(_collect_numeric_values(value))
-    elif isinstance(obj, list):
-        for value in obj:
-            values.extend(_collect_numeric_values(value))
-    elif isinstance(obj, (int, float)):
-        values.append(obj)
-
-    return values
-
-
-def _format_scores(lab: str, data: dict) -> str:
+def _format_scores(lab: str, data: list[dict]) -> str:
     lines = [f"Scores for {lab}:"]
 
     if not data:
         lines.append("No data found.")
         return "\n".join(lines)
 
-    if isinstance(data, dict):
-        for key, value in data.items():
-            if isinstance(value, dict):
-                task_name = key.replace("_", " ").title()
-                numeric_values = _collect_numeric_values(value)
+    total = 0.0
+    count = 0
 
-                if numeric_values:
-                    pretty_vals = ", ".join(
-                        f"{v:.1f}%" if isinstance(v, float) else str(v)
-                        for v in numeric_values[:3]
-                    )
-                    lines.append(f"- {task_name}: {pretty_vals}")
-                else:
-                    lines.append(f"- {task_name}: {value}")
+    for row in data:
+        task = row.get("task", "Unknown task")
+        avg_score = float(row.get("avg_score", 0.0))
+        attempts = int(row.get("attempts", 0))
+        lines.append(f"- {task}: {avg_score:.1f}% ({attempts} attempts)")
+        total += avg_score
+        count += 1
 
-            elif isinstance(value, list):
-                lines.append(f"- {key}: {len(value)} entries")
-                for entry in value[:5]:
-                    lines.append(f"  - {entry}")
-
-            elif isinstance(value, (int, float)):
-                if "rate" in key.lower() or "percent" in key.lower():
-                    lines.append(f"- {key}: {value:.1f}%")
-                else:
-                    lines.append(f"- {key}: {value}")
-            else:
-                lines.append(f"- {key}: {value}")
-
-    numeric_values = _collect_numeric_values(data)
-    if numeric_values and not any("%" in line for line in lines):
-        first = numeric_values[0]
-        if isinstance(first, float):
-            lines.append(f"Summary: {first:.1f}%")
-        else:
-            lines.append(f"Summary: {first}")
+    if count > 0:
+        lines.append(f"Summary: {total / count:.1f}%")
 
     return "\n".join(lines)
 
