@@ -71,6 +71,21 @@ services:
       postgres:
         condition: service_healthy
 
+  bot:
+    build:
+      context: .
+      dockerfile: bot/Dockerfile
+      args:
+        REGISTRY_PREFIX: ${REGISTRY_PREFIX:-harbor.pg.innopolis.university/docker-hub-cache/}
+    restart: unless-stopped
+    networks:
+      - lms-network
+    depends_on:
+      backend:
+        condition: service_started
+    env_file:
+      - .env.bot.secret
+
   caddy:
     build:
       context: frontend/

@@ -95,3 +95,36 @@ By the end of this lab, you should be able to say:
 ### Optional
 
 1. [Flutter Web Chatbot](./lab/tasks/optional/task-1.md)
+## Deploy
+
+This project can be deployed with Docker Compose and includes the LMS backend, PostgreSQL, pgAdmin, Caddy, and the Telegram bot.
+
+### Environment variables
+
+Before deployment, create and configure these files:
+
+- `.env.docker.secret`
+- `.env.bot.secret`
+
+Required variables include:
+
+- `LMS_API_KEY`
+- `LMS_API_BASE_URL`
+- `BOT_TOKEN`
+- `LLM_API_KEY`
+- `LLM_API_BASE_URL`
+- `LLM_API_MODEL`
+- `AUTOCHECKER_API_URL`
+- `AUTOCHECKER_API_LOGIN`
+- `AUTOCHECKER_API_PASSWORD`
+
+### Build and run
+
+docker compose --env-file .env.docker.secret up --build -d
+
+### Verification
+
+docker compose --env-file .env.docker.secret ps
+docker compose --env-file .env.docker.secret logs bot --tail=50
+curl -i http://localhost:42002/docs
+curl -H "Authorization: Bearer my-secret-api-key" http://localhost:42002/items/
